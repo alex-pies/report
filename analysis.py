@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -16,7 +17,8 @@ def clean_data():
 
     for fake_file, file in zip(fake_files, files):
         df = pd.read_csv(fake_file, index_col='学号')
-        df = df[(df.考试性质 == '正常考试') & (df.课程名称 != '创新实践活动')]
+        df = df[(df.考试性质 == '正常考试') & (df.课程名称 != '创新实践活动') & (df.课程性质 != '素质拓展环节') &  (df.课程性质 != '其它环节')]
+        # 至于为什么要一个个排除呢，因为学艺不精目前还没找到的排除方法。。。 你们找吧
         df.to_csv(file)
     print('clean data done')
 
@@ -82,34 +84,40 @@ def single_subject_compare(subject):
         plt.savefig(os.path.join('images', title+'.png'))
 
 
-def public_basic_courses_fail_compare():
+def general_subject_analysis():
     """
-    公共基础课每个年级挂科情况
-    每年挂科比例较高的科目
-    较高的科目的老师是谁 哈哈
-    :return: None
+    通识选修课近三年的占比走势
+    :return:
     """
-    dfs = {}
+    rates = []
     for file in files:
         df = pd.read_csv(file, index_col='学号')
-        df = df[(df.课程性质 == '公共基础课')]
-        print(df)
-        df.总成绩 = df.总成绩.astype('float64')
-        df = df[(df.总成绩 < 60)]
-        dfs[file[:4]] = df
-        print(df[['姓名', '课程名称', '总成绩']])
-    # print(dfs)
+        df.课程性质, df.课程名称, df.学分 = df.课程性质.astype(str), df.课程名称.astype(str), df.学分.astype('float64')
+        df['课程形式'] = df.apply(lambda x: '网课' if '尔雅网课' in x.课程名称 else '传统', axis=1)
+        df['课程性质'] = df.apply(lambda x: '通识选修课' if '通识' in x.课程性质 else '非', axis=1)
+        df = df[(df.课程名称 != 'nan') & (df.课程性质 == '通识选修课')]
+        print(df[['学分', '课程形式']])
+        df = df[['学分', '课程形式']]
+        print(pd.DataFrame(data={
+            '总学分': [df.学分.sum()],
+            '传统学分': [df[df.课程形式 == '传统'].学分.sum()],
+            '网课学分': [df[df.课程形式 == '网课'].学分.sum()]
+        }))
+        rates.append(df[df.课程形式 == '网课'].学分.sum() / df.学分.sum())
+    print(rates)
+    rates_df = pd.Series(rates, index=[file[:4] for file in files])
+    rates_df.plot.line().get_figure().savefig(os.path.join('images', '通识选修所有学生修得学分占比折线图'+'.png'))
 
 
-def general_elective_courses_fail_analysis():
+def general_subject_credit_warnings(single_stu):
     """
-    通识选修课学分不够的数据分析
-    :return: None
+    通识选修课没够的人
+    :return:  列表，列表元素是 没够的人 + 不够的不同学科的学分
     """
     pass
 
 
 if __name__ == '__main__':
     clean_data()
-    single_subject_compare('大学英语Ⅰ')
-    # public_basic_courses_fail_compare()
+    # single_subject_compare('大学英语Ⅰ')
+    # general_subject_analysis()
