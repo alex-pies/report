@@ -29,3 +29,33 @@
     - 通识必修课程，三个年级挂科情况分析，挂科最多的课程从多到少前几个
     - 通识选修课程，没修够学分的情况分析
     - 年级选修课程未达标提示功能
+
+
+# 学弟学妹们 请看最终章
+
+- 做的东西
+    - 学习成绩的分析，主要三个部分
+        - 单科成绩的13 14 15三个年级的平均分 中位数 最高分 最低分 等直方图
+        - 三个年级通识选修课内，网络课程修得的学分所占比重
+        - 通识选修课，学分警告的逻辑
+
+- 用到的技术
+    - python, 编程语言！跨平台!!
+    - pandas, 数据分析的python库，好用！作用功能自行百度，本程序用到的技术实属皮毛，要好好学习呦
+
+- 演示过程
+    - 装python3
+    - 装虚拟环境 virtualenv
+    - 进入该项目所在目录 建造虚拟环境 virtualenv report_env --python=python3
+    - 激活虚拟环境，linux/mac: source report_env/bin/activate    windows自行百度
+    - cd 项目里 pip3 install -r requirements.txt 安装依赖包
+    - python3 exhibition.py 按照提示进行就好
+    - ps: 许多print并没有必要可以删掉，提示语言有不规范，自行改正!
+    - 再ps: 为了演示不出错误！提前试试哈！
+
+- 项目总开发步骤与程序逻辑
+    - 把2013 2014 2015成绩表转为csv保存
+    - 程序里有一个clean_data是为了进一步清洗数据，可能程序清洗不是很彻底，所以你们要提前试好
+    - single_subject_compare 这个函数 是要 比较单个项目三年几个统计数据的比较
+    - general_subject_analysis 这个函数是要 统计 通识选修课 网课学分 三年 占比情况
+    - general_subject_credit_warnings 通识选修课 单个人物 警告程序
