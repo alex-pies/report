@@ -34,12 +34,14 @@ def single_subject_compare(subject):
         if not os.path.isfile(file):
             # 检查文件是否存在
             print('file: %s not found' % file)
-            exit(1)
+            # exit(1)
+            raise Exception('file: %s not found' % file)
         df = pd.read_csv(file, index_col='学号')
         if subject not in df.课程名称.unique():
             # 检查这个科目是否存在
             print('subject: %s not found in file: %s' % (subject, file))
-            exit(1)
+            # exit(1)
+            raise Exception('subject: %s not found in file: %s' % (subject, file))
         df = df[df.课程名称 == subject][['总成绩']]
         df['总成绩'] = df['总成绩'].astype('float64')
         print(df.describe())
@@ -54,8 +56,8 @@ def single_subject_compare(subject):
     }, index=[file[:4] for file in files])
     print(plt_df)
     plt_df.plot.bar().get_figure().savefig(os.path.join('images', 'single_subject.png'))
-    print('single-subject-compare bar figure done.')
     plt.close()
+    print('single-subject-compare bar figure done.')
     # todo: 各年级分数段占比的饼状图
 
     def level(a):
@@ -147,7 +149,52 @@ def general_subject_credit_warnings(grade, no, std_credits):
 
 
 if __name__ == '__main__':
+    print('首先要清理数据')
     clean_data()
-    # single_subject_compare('大学英语Ⅰ')
-    # general_subject_analysis()
-    general_subject_credit_warnings('2014', 201414010334, [('人文', 19.0), ('自然', 20.0), ('艺体', 21.0)])
+    print('清理数据完成')
+    while True:  # 不用第三方库了，自己手写吧
+        try:
+            op = input('请输入您想干嘛，选项如下：A. 单科目三年成绩分析 B. 通识选修课网课学分占比分析 C. 查人通识选修课是否修满, D. 跑错程序了，我要退出, 请选择: ')
+            op = op.strip()
+            if op.lower() == 'a':
+                subject = input('请输入学科，你想看的: ')
+                print('好嘞，画图准备')
+                single_subject_compare(subject)
+                print('好啦，画完了，您可以打开images下single_subject.png观看了，根据数据图形模样，您看着分析吧.')
+            elif op.lower() == 'b':
+                print('学分占比开始~')
+                general_subject_analysis()
+                print('网课学分占比三年折线图绘画完成，供您参考，在images下')
+            elif op.lower() == 'c':
+                while True:
+                    grade = input('请输入年级：')
+                    if grade not in ('2014', '2015', '2013'):
+                        print('您所输入年级非法')
+                        continue
+                    try:
+                        no = int(input('请输入学号：'))
+                    except ValueError:
+                        print('学号得是好好的数字诶！重新输入吧')
+                        continue
+                    sub_types = ['人文', '自然', '艺体']
+                    std_credits = []
+                    for sub_type in sub_types:
+                        while True:
+                            std_credit = input('请输入%s最少学分：' % (sub_type,))
+                            try:
+                                std_credit = float(std_credit)
+                            except ValueError:
+                                print('学分有误请重新输入')
+                                continue
+                            std_credits.append((sub_type, std_credit))
+                            break
+
+                    general_subject_credit_warnings(grade, no, std_credits)
+                    print('分析完了，若有警告那就危险咯:)')
+                    break
+            elif op.lower() == 'd':
+                print('再见 大兄弟')
+            else:
+                print('妹看到给你的提示吗？！ A, B, C 憋乱输入，想出去按D, 再来一次袄!')
+        except Exception as e:
+            print('error: %s' % e)
